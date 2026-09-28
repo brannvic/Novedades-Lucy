@@ -37,25 +37,26 @@ export default function Home() {
               </h1>
             </div>
           </Link>
+            
+            {/* Menú y carrito */}
+            <div className="flex items-center gap-2">
 
-          {/* Menú y carrito */}
-          <div className="flex items-center gap-2">
-
-            <Link
-              href="/catalogo"
-              className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+            <button
+              type="button"
+              onClick={() => window.location.assign("/catalogo")}
+              className="rounded-full p-3 text-2xl transition hover:bg-pink-50 cursor-pointer"
               aria-label="Abrir menú"
             >
               ☰
-            </Link>
-
-            <Link
-              href="/carrito"
-              className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.assign("/carrito")}
+              className="rounded-full p-3 text-2xl transition hover:bg-pink-50 cursor-pointer"
               aria-label="Ver carrito"
             >
               🛒
-            </Link>
+            </button>
 
           </div>
         </div>
