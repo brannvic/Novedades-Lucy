@@ -416,13 +416,10 @@ export default function PedidosPage() {
                   </p>
 
                   <p className="mt-1 text-sm text-gray-600">
-                    Tu solicitud de devolución se encuentra
-                    registrada.
+                    Tu solicitud de devolución se encuentra registrada.
                   </p>
-                )}
-            </div>
-          </>
-        )}
+                </div>
+              )}
       </section>
 
       {/* FOOTER */}
