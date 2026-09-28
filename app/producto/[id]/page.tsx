@@ -88,6 +88,25 @@ export default function ProductoPage() {
 
   const subtotal = cantidad * precioUnitario;
 
+  const agregarAlCarrito = () => {
+  const productoCarrito = {
+    id: producto.id,
+    nombre: producto.nombre,
+    modelo: producto.modelo,
+    cantidad,
+    precioUnitario,
+    subtotal,
+    emoji: producto.emoji,
+  };
+
+  localStorage.setItem(
+    "novedades-lucy-carrito",
+    JSON.stringify(productoCarrito)
+  );
+
+  window.location.href = "/carrito";
+};
+
   return (
     <main className="min-h-screen bg-[#fff7fb] text-[#4a2857]">
       {/* HEADER */}
@@ -255,8 +274,11 @@ export default function ProductoPage() {
 
             {/* BOTONES */}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <button className="rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg">
-                🛒 Agregar al carrito
+              <button
+                onClick={agregarAlCarrito}
+                className="rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg"
+              >
+              🛒 Agregar al carrito
               </button>
 
               <button className="rounded-full border-2 border-[#70409a] px-6 py-4 font-bold text-[#70409a] transition hover:bg-purple-50">
