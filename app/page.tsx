@@ -42,23 +42,22 @@ export default function Home() {
             
             {/* Menú y carrito */}
             <div className="flex items-center gap-2">
+             <Link
+              href="/menu"
+              className="rounded-full p-3 text-2xl hover:bg-pink-50"
+              aria-label="Abrir menú"
+            >
+              ☰
+            </Link>
 
-              <Link
-                href="/catalogo"
-                className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
-                aria-label="Abrir catálogo"
-              >
-                ☰
-              </Link>
-
-              <Link
-                href="/carrito"
-                className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
-                aria-label="Ver carrito"
-              >
-                🛒
-              </Link>
-
+          {/* Carrito → Carrito */}
+          <Link
+            href="/carrito"
+            className="rounded-full p-3 text-2xl hover:bg-pink-50"
+            aria-label="Ver carrito"
+          >
+            🛒
+          </Link>
             </div>
         </div>
       </header>

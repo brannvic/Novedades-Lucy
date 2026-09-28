@@ -93,9 +93,9 @@ return (
 
           {/* Menú → Catálogo */}
           <Link
-            href="/catalogo"
-            className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
-            aria-label="Ver catálogo"
+            href="/menu"
+            className="rounded-full p-3 text-2xl hover:bg-pink-50"
+            aria-label="Abrir menú"
           >
             ☰
           </Link>
@@ -103,7 +103,7 @@ return (
           {/* Carrito → Carrito */}
           <Link
             href="/carrito"
-            className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+            className="rounded-full p-3 text-2xl hover:bg-pink-50"
             aria-label="Ver carrito"
           >
             🛒
