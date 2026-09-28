@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const categorias = [
   {
     icono: "👶",
@@ -22,7 +24,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="text-3xl">💗</div>
 
             <div className="leading-none">
@@ -34,30 +36,26 @@ export default function Home() {
                 Lucy
               </h1>
             </div>
-          </a>
+          </Link>
 
           {/* Menú y carrito */}
           <div className="flex items-center gap-2">
 
-            <button
+            <Link
+              href="/catalogo"
               className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
               aria-label="Abrir menú"
-              onClick={() => {
-                window.location.href = "/catalogo";
-              }}
             >
               ☰
-            </button>
+            </Link>
 
-            <button
+            <Link
+              href="/carrito"
               className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
               aria-label="Ver carrito"
-              onClick={() => {
-                window.location.href = "/carrito";
-              }}
             >
               🛒
-            </button>
+            </Link>
 
           </div>
         </div>
@@ -91,14 +89,12 @@ export default function Home() {
                 sencilla.
               </p>
 
-              <button
-                onClick={() => {
-                  window.location.href = "/catalogo";
-                }}
-                className="mt-7 rounded-full bg-[#ef4b91] px-7 py-3.5 text-base font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg"
+              <Link
+                href="/catalogo"
+                className="mt-7 inline-block rounded-full bg-[#ef4b91] px-7 py-3.5 text-base font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg"
               >
                 Ver catálogo →
-              </button>
+              </Link>
 
             </div>
 
@@ -124,11 +120,9 @@ export default function Home() {
 
           {categorias.map((categoria) => (
 
-            <button
+            <Link
               key={categoria.nombre}
-              onClick={() => {
-                window.location.href = "/catalogo";
-              }}
+              href="/catalogo"
               className="group flex flex-col items-center rounded-3xl border border-pink-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
 
@@ -140,7 +134,7 @@ export default function Home() {
                 {categoria.nombre}
               </span>
 
-            </button>
+            </Link>
 
           ))}
 
