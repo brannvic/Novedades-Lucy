@@ -420,6 +420,9 @@ export default function PedidosPage() {
                   </p>
                 </div>
               )}
+            </div>
+          </>
+        )}
       </section>
 
       {/* FOOTER */}
