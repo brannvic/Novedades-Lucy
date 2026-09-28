@@ -14,6 +14,8 @@ type Pedido = {
 
   metodoPago: string;
 
+  tipoEntrega: "envio" | "fisica" | "";
+
   fechaEntrega: string;
 
   datosEnvio: {
@@ -30,9 +32,12 @@ type Pedido = {
 };
 
 export default function ConfirmacionPage() {
-  const [pedido, setPedido] = useState<Pedido | null>(null);
+
+  const [pedido, setPedido] =
+    useState<Pedido | null>(null);
 
   useEffect(() => {
+
     const pedidoGuardado = localStorage.getItem(
       "novedades-lucy-pedido"
     );
@@ -40,25 +45,39 @@ export default function ConfirmacionPage() {
     if (pedidoGuardado) {
       setPedido(JSON.parse(pedidoGuardado));
     }
+
   }, []);
 
   const formatearFecha = (fecha: string) => {
-    if (!fecha) return "No especificada";
 
-    const [year, month, day] = fecha.split("-");
+    if (!fecha) {
+      return "No especificada";
+    }
+
+    const [year, month, day] =
+      fecha.split("-");
 
     return `${day}/${month}/${year}`;
   };
 
-    const [numeroPedido] = useState(
-        () => "NL-" + Math.floor(1000 + Math.random() * 9000)
-    );
+  const [numeroPedido] = useState(
+    () =>
+      "NL-" +
+      Math.floor(
+        1000 + Math.random() * 9000
+      )
+  );
 
   if (!pedido) {
+
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#fff7fb] px-6">
+
         <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
-          <div className="text-5xl">📦</div>
+
+          <div className="text-5xl">
+            📦
+          </div>
 
           <h1 className="mt-4 text-2xl font-black text-[#70409a]">
             No encontramos tu pedido
@@ -74,7 +93,9 @@ export default function ConfirmacionPage() {
           >
             Ir al catálogo
           </a>
+
         </div>
+
       </main>
     );
   }
@@ -84,14 +105,20 @@ export default function ConfirmacionPage() {
 
       {/* HEADER */}
       <header className="border-b border-pink-100 bg-white">
+
         <div className="mx-auto flex max-w-6xl items-center px-6 py-4">
 
-          <a href="/" className="flex items-center gap-2">
+          <a
+            href="/"
+            className="flex items-center gap-2"
+          >
+
             <div className="text-3xl">
               💗
             </div>
 
             <div className="leading-none">
+
               <p className="text-sm font-bold text-[#70409a]">
                 Novedades
               </p>
@@ -99,10 +126,13 @@ export default function ConfirmacionPage() {
               <h1 className="text-2xl font-black text-[#ef4b91]">
                 Lucy
               </h1>
+
             </div>
+
           </a>
 
         </div>
+
       </header>
 
       {/* CONTENIDO */}
@@ -125,7 +155,8 @@ export default function ConfirmacionPage() {
 
           <p className="mx-auto mt-3 max-w-xl text-gray-500">
             Tu pedido fue registrado correctamente.
-            A continuación puedes consultar el resumen de tu compra.
+            A continuación puedes consultar el resumen
+            de tu compra.
           </p>
 
         </div>
@@ -180,6 +211,7 @@ export default function ConfirmacionPage() {
             <div className="mt-6 border-t border-gray-100 pt-5">
 
               <div className="flex justify-between text-sm">
+
                 <span className="text-gray-500">
                   Precio unitario
                 </span>
@@ -187,9 +219,11 @@ export default function ConfirmacionPage() {
                 <span className="font-bold">
                   ${pedido.producto.precioUnitario}
                 </span>
+
               </div>
 
               <div className="mt-3 flex justify-between text-sm">
+
                 <span className="text-gray-500">
                   Subtotal
                 </span>
@@ -197,6 +231,7 @@ export default function ConfirmacionPage() {
                 <span className="font-bold">
                   ${pedido.producto.subtotal}
                 </span>
+
               </div>
 
               <div className="mt-4 flex items-end justify-between border-t border-gray-100 pt-4">
@@ -224,45 +259,106 @@ export default function ConfirmacionPage() {
 
             <div className="mt-5 space-y-4">
 
+              {/* TIPO */}
               <div>
+
                 <p className="text-xs font-bold uppercase text-gray-400">
-                  Recibe
+                  Tipo de entrega
                 </p>
 
-                <p className="mt-1 font-bold">
-                  {pedido.datosEnvio.nombre}
+                <p className="mt-1 text-xl font-black text-[#ef4b91]">
+
+                  {pedido.tipoEntrega === "fisica"
+                    ? "🏪 Recogida presencial"
+                    : "🚚 Envío a domicilio"}
+
                 </p>
+
               </div>
 
-              <div>
-                <p className="text-xs font-bold uppercase text-gray-400">
-                  Dirección
-                </p>
+              {/* RECOGIDA PRESENCIAL */}
+              {pedido.tipoEntrega === "fisica" ? (
 
-                <p className="mt-1 font-bold">
-                  {pedido.datosEnvio.calle}{" "}
-                  {pedido.datosEnvio.numero}
-                </p>
+                <div className="rounded-2xl border border-pink-100 bg-[#fff7fb] p-5">
 
-                <p className="text-sm text-gray-500">
-                  {pedido.datosEnvio.colonia},{" "}
-                  {pedido.datosEnvio.ciudad}
-                </p>
+                  <p className="font-black text-[#70409a]">
+                    📍 Lugar de recogida
+                  </p>
 
-                <p className="text-sm text-gray-500">
-                  C.P. {pedido.datosEnvio.codigoPostal}
-                </p>
-              </div>
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    Girón 33, Centro Histórico de la Cdad.
+                    de México, Centro, Cuauhtémoc, 06020
+                    Ciudad de México, CDMX
+                  </p>
 
-              <div>
-                <p className="text-xs font-bold uppercase text-gray-400">
-                  Teléfono
-                </p>
+                  <div className="mt-4 rounded-xl bg-white p-4">
 
-                <p className="mt-1 font-bold">
-                  {pedido.datosEnvio.telefono}
-                </p>
-              </div>
+                    <p className="text-xs font-bold uppercase text-gray-400">
+                      Fecha de recogida
+                    </p>
+
+                    <p className="mt-1 font-black text-[#ef4b91]">
+                      📅 {formatearFecha(pedido.fechaEntrega)}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              ) : (
+
+                /* ENVÍO */
+                <div className="space-y-4">
+
+                  <div>
+
+                    <p className="text-xs font-bold uppercase text-gray-400">
+                      Recibe
+                    </p>
+
+                    <p className="mt-1 font-bold">
+                      {pedido.datosEnvio.nombre}
+                    </p>
+
+                  </div>
+
+                  <div>
+
+                    <p className="text-xs font-bold uppercase text-gray-400">
+                      Dirección
+                    </p>
+
+                    <p className="mt-1 font-bold">
+                      {pedido.datosEnvio.calle}{" "}
+                      {pedido.datosEnvio.numero}
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      {pedido.datosEnvio.colonia},{" "}
+                      {pedido.datosEnvio.ciudad}
+                    </p>
+
+                    <p className="text-sm text-gray-500">
+                      C.P. {pedido.datosEnvio.codigoPostal}
+                    </p>
+
+                  </div>
+
+                  <div>
+
+                    <p className="text-xs font-bold uppercase text-gray-400">
+                      Teléfono
+                    </p>
+
+                    <p className="mt-1 font-bold">
+                      {pedido.datosEnvio.telefono}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              )}
 
             </div>
 
@@ -273,10 +369,13 @@ export default function ConfirmacionPage() {
         {/* FECHA Y PAGO */}
         <div className="mt-6 grid gap-6 md:grid-cols-2">
 
+          {/* FECHA */}
           <div className="rounded-3xl bg-white p-6 shadow-sm">
 
             <p className="text-sm font-bold text-gray-400">
-              FECHA DE ENTREGA
+              {pedido.tipoEntrega === "fisica"
+                ? "FECHA DE RECOGIDA"
+                : "FECHA DE ENTREGA"}
             </p>
 
             <p className="mt-2 text-2xl font-black text-[#70409a]">
@@ -285,6 +384,7 @@ export default function ConfirmacionPage() {
 
           </div>
 
+          {/* PAGO */}
           <div className="rounded-3xl bg-white p-6 shadow-sm">
 
             <p className="text-sm font-bold text-gray-400">
@@ -292,9 +392,13 @@ export default function ConfirmacionPage() {
             </p>
 
             <p className="mt-2 text-2xl font-black text-[#70409a]">
+
               {pedido.metodoPago === "tarjeta"
-                ? "💳 Tarjeta / Transferencia"
+                ? "💳 Tarjeta"
+                : pedido.metodoPago === "transferencia"
+                ? "🏦 Transferencia"
                 : "💵 Efectivo"}
+
             </p>
 
           </div>

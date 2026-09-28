@@ -43,24 +43,23 @@ export default function Home() {
             {/* Menú y carrito */}
             <div className="flex items-center gap-2">
 
-            <button
-              type="button"
-              onClick={() => window.location.assign("/catalogo")}
-              className="rounded-full p-3 text-2xl transition hover:bg-pink-50 cursor-pointer"
-              aria-label="Abrir menú"
-            >
-              ☰
-            </button>
-            <button
-              type="button"
-              onClick={() => window.location.assign("/carrito")}
-              className="rounded-full p-3 text-2xl transition hover:bg-pink-50 cursor-pointer"
-              aria-label="Ver carrito"
-            >
-              🛒
-            </button>
+              <Link
+                href="/catalogo"
+                className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+                aria-label="Abrir catálogo"
+              >
+                ☰
+              </Link>
 
-          </div>
+              <Link
+                href="/carrito"
+                className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+                aria-label="Ver carrito"
+              >
+                🛒
+              </Link>
+
+            </div>
         </div>
       </header>
 
@@ -192,6 +191,42 @@ export default function Home() {
 
         </div>
 
+      </section>
+
+      {/* UBICACIÓN */}
+      <section className="mx-auto max-w-6xl px-6 pb-16">
+        <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+            <div>
+              <p className="text-3xl">📍</p>
+
+              <h2 className="mt-2 text-xl font-black text-[#70409a]">
+                Visítanos
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+                Puedes recoger tus pedidos presencialmente en:
+              </p>
+
+              <p className="mt-2 font-semibold text-[#4a2857]">
+                Girón 33, Centro Histórico de la Cdad. de México,
+                Centro, Cuauhtémoc, 06020 Ciudad de México, CDMX
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-[#fff7fb] px-5 py-4 text-center">
+              <p className="text-sm font-bold text-[#ef4b91]">
+                📦 Recogida presencial
+              </p>
+
+              <p className="mt-1 text-xs text-gray-500">
+                Selecciona esta opción al finalizar tu pedido.
+              </p>
+            </div>
+
+          </div>
+        </div>
       </section>
 
       {/* FOOTER */}

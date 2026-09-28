@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useState } from "react";
 
@@ -61,36 +62,56 @@ export default function Catalogo() {
     return coincideCategoria && coincideBusqueda;
   });
 
-  return (
-    <main className="min-h-screen bg-[#fff7fb] text-[#4a2857]">
-      {/* HEADER */}
-      <header className="border-b border-pink-100 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <a href="/" className="flex items-center gap-2">
-            <div className="text-3xl">💗</div>
+return (
+  <main className="min-h-screen bg-[#fff7fb] text-[#4a2857]">
 
-            <div className="leading-none">
-              <p className="text-sm font-bold text-[#70409a]">
-                Novedades
-              </p>
+    {/* HEADER */}
+    <header className="border-b border-pink-100 bg-white">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 
-              <h1 className="text-2xl font-black text-[#ef4b91]">
-                Lucy
-              </h1>
-            </div>
-          </a>
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="Ir al inicio"
+        >
+          <div className="text-3xl">💗</div>
 
-          <div className="flex items-center gap-2">
-            <button className="rounded-full p-3 text-2xl hover:bg-pink-50">
-              ☰
-            </button>
+          <div className="leading-none">
+            <p className="text-sm font-bold text-[#70409a]">
+              Novedades
+            </p>
 
-            <button className="rounded-full p-3 text-2xl hover:bg-pink-50">
-              🛒
-            </button>
+            <h1 className="text-2xl font-black text-[#ef4b91]">
+              Lucy
+            </h1>
           </div>
+        </Link>
+
+        {/* Menú y carrito */}
+        <div className="flex items-center gap-2">
+
+          {/* Menú → Catálogo */}
+          <Link
+            href="/catalogo"
+            className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+            aria-label="Ver catálogo"
+          >
+            ☰
+          </Link>
+
+          {/* Carrito → Carrito */}
+          <Link
+            href="/carrito"
+            className="rounded-full p-3 text-2xl transition hover:bg-pink-50"
+            aria-label="Ver carrito"
+          >
+            🛒
+          </Link>
+
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* CONTENIDO */}
       <section className="mx-auto max-w-6xl px-6 py-10">

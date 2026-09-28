@@ -58,6 +58,7 @@ export default function PagoPage() {
   ) => {
     setMetodoPago(metodo);
 
+    // EFECTIVO SOLO PERMITE RECOGIDA FÍSICA
     if (metodo === "efectivo") {
       setTipoEntrega("fisica");
     } else {
@@ -93,6 +94,7 @@ export default function PagoPage() {
         alert(
           "Completa todos los datos de la tarjeta para continuar."
         );
+
         return false;
       }
     }
@@ -109,6 +111,7 @@ export default function PagoPage() {
       alert(
         "Selecciona cómo deseas recibir tu pedido."
       );
+
       return;
     }
 
@@ -521,7 +524,7 @@ export default function PagoPage() {
                   <div>
 
                     <p className="font-black text-green-700">
-                      Entrega física
+                      Recogida presencial
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-green-700">
@@ -608,7 +611,7 @@ export default function PagoPage() {
                       </div>
 
                       <p className="mt-3 font-black text-[#70409a]">
-                        Entrega física
+                        Recogida presencial
                       </p>
 
                       <p className="mt-1 text-sm text-gray-500">
@@ -665,24 +668,48 @@ export default function PagoPage() {
                 <div className="flex gap-4">
 
                   <div className="text-3xl">
-                    📅
+                    🏪
                   </div>
 
-                  <div>
+                  <div className="flex-1">
 
                     <p className="font-black text-[#70409a]">
-                      Fecha de entrega física
+                      Recogida presencial
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-gray-600">
                       Tu pedido estará disponible para
-                      entrega física en la fecha que
-                      seleccionaste anteriormente.
+                      recogerlo físicamente en la fecha
+                      seleccionada.
                     </p>
 
-                    <p className="mt-3 font-black text-[#ef4b91]">
-                      {formatearFecha(fechaEntrega)}
-                    </p>
+                    {/* DIRECCIÓN */}
+                    <div className="mt-4 rounded-xl border border-purple-200 bg-white p-4">
+
+                      <p className="font-bold text-[#70409a]">
+                        📍 Lugar de recogida
+                      </p>
+
+                      <p className="mt-2 text-sm leading-6 text-gray-600">
+                        Girón 33, Centro Histórico de la Cdad.
+                        de México, Centro, Cuauhtémoc, 06020
+                        Ciudad de México, CDMX
+                      </p>
+
+                    </div>
+
+                    {/* FECHA */}
+                    <div className="mt-4 rounded-xl bg-white p-4">
+
+                      <p className="text-sm font-bold text-[#70409a]">
+                        📅 Fecha de recogida
+                      </p>
+
+                      <p className="mt-1 font-black text-[#ef4b91]">
+                        {formatearFecha(fechaEntrega)}
+                      </p>
+
+                    </div>
 
                   </div>
 
@@ -760,6 +787,7 @@ export default function PagoPage() {
                 <div className="mt-6 space-y-3 text-sm">
 
                   <div className="flex justify-between">
+
                     <span className="text-gray-500">
                       Precio unitario
                     </span>
@@ -767,9 +795,11 @@ export default function PagoPage() {
                     <span className="font-bold">
                       ${producto.precioUnitario}
                     </span>
+
                   </div>
 
                   <div className="flex justify-between">
+
                     <span className="text-gray-500">
                       Cantidad
                     </span>
@@ -777,6 +807,7 @@ export default function PagoPage() {
                     <span className="font-bold">
                       {producto.cantidad}
                     </span>
+
                   </div>
 
                   <div className="border-t border-gray-100 pt-4">
