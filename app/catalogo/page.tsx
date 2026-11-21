@@ -173,8 +173,25 @@ return (
                 className="overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
                 {/* IMAGEN PROVISIONAL */}
-                <div className="flex h-56 items-center justify-center bg-gradient-to-br from-[#ffe5f0] to-[#eadcf5] text-7xl">
+                <div className={`relative flex h-56 items-center justify-center bg-gradient-to-br from-[#ffe5f0] to-[#eadcf5] text-7xl ${producto.disponible ? "" : "opacity-50 grayscale"}`}>
                   {producto.emoji}
+
+                  {/* DISPONIBILIDAD (Capítulo 2) */}
+                  <span
+                    className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold ${
+                      producto.estadoStock === "agotado"
+                        ? "bg-gray-700 text-white"
+                        : producto.estadoStock === "ultimas_piezas"
+                        ? "bg-amber-400 text-[#4a2857]"
+                        : "bg-green-500 text-white"
+                    }`}
+                  >
+                    {producto.estadoStock === "agotado"
+                      ? "Agotado"
+                      : producto.estadoStock === "ultimas_piezas"
+                      ? `¡Últimas ${producto.existencias}!`
+                      : "Disponible"}
+                  </span>
                 </div>
 
                 <div className="p-5">

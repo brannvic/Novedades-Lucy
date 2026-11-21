@@ -63,6 +63,11 @@ export default function ProductoPage() {
   const subtotal = cantidad * precioUnitario;
 
   const agregarAlCarrito = () => {
+  if (!producto.disponible || cantidad > producto.existencias) {
+    alert("No hay suficientes piezas en existencia.");
+    return;
+  }
+
   const productoCarrito = {
     id: producto.id,
     nombre: producto.nombre,
@@ -190,6 +195,21 @@ export default function ProductoPage() {
               </p>
             )}
 
+            {/* DISPONIBILIDAD (Capítulo 2) */}
+            <p
+              className={`mt-4 w-fit rounded-full px-4 py-2 text-sm font-bold ${
+                producto.estadoStock === "agotado"
+                  ? "bg-gray-100 text-gray-600"
+                  : producto.estadoStock === "ultimas_piezas"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-green-50 text-green-700"
+              }`}
+            >
+              {producto.estadoStock === "agotado"
+                ? "✕ Agotado"
+                : `✓ Disponible · ${producto.existencias} pieza${producto.existencias !== 1 ? "s" : ""} en existencia`}
+            </p>
+
             {/* CANTIDAD */}
             <div className="mt-8">
               <p className="mb-3 font-bold text-[#70409a]">
@@ -214,9 +234,12 @@ export default function ProductoPage() {
 
                 <button
                   onClick={() =>
-                    setCantidad((actual) => actual + 1)
+                    setCantidad((actual) =>
+                      Math.min(producto.existencias, actual + 1)
+                    )
                   }
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-pink-200 bg-white text-xl font-bold hover:bg-pink-50"
+                  disabled={cantidad >= producto.existencias}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-pink-200 bg-white text-xl font-bold hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   +
                 </button>
@@ -259,9 +282,10 @@ export default function ProductoPage() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <button
                 onClick={agregarAlCarrito}
-                className="rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg"
+                disabled={!producto.disponible}
+                className="rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82] hover:shadow-lg disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
               >
-              🛒 Agregar al carrito
+              {producto.disponible ? "🛒 Agregar al carrito" : "Agotado"}
               </button>
 
               <button className="rounded-full border-2 border-[#70409a] px-6 py-4 font-bold text-[#70409a] transition hover:bg-purple-50">

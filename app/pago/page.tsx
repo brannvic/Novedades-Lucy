@@ -181,6 +181,17 @@ export default function PagoPage() {
 
     if (error || !data) {
       setGuardando(false);
+
+      // Capítulo 2: alguien más compró las últimas piezas
+      if (error?.message?.includes("SIN_EXISTENCIAS")) {
+        alert(
+          "Lo sentimos, ya no hay suficientes piezas de este producto. " +
+            error.message.replace("SIN_EXISTENCIAS: ", "") +
+            ". Ajusta la cantidad en el catálogo."
+        );
+        return;
+      }
+
       alert(
         "No pudimos registrar tu pedido. Revisa tu conexión e intenta de nuevo."
       );
