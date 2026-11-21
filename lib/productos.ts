@@ -64,7 +64,10 @@ export async function obtenerProductos(): Promise<Producto[]> {
     .order("categoria")
     .order("nombre");
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error al cargar productos de Supabase:", error);
+    throw error;
+  }
   return (data as FilaProducto[]).map(aProducto);
 }
 
