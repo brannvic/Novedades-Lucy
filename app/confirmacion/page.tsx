@@ -39,6 +39,9 @@ export default function ConfirmacionPage() {
   const [pedido, setPedido] =
     useState<Pedido | null>(null);
 
+  const [estadoPagoMP, setEstadoPagoMP] =
+    useState<string | null>(null);
+
   useEffect(() => {
 
     const pedidoGuardado = localStorage.getItem(
@@ -48,6 +51,12 @@ export default function ConfirmacionPage() {
     if (pedidoGuardado) {
       setPedido(JSON.parse(pedidoGuardado));
     }
+
+    // Capítulo 7: Mercado Pago regresa con ?status=approved|pending|rejected
+    const parametros = new URLSearchParams(window.location.search);
+    setEstadoPagoMP(
+      parametros.get("status") ?? parametros.get("collection_status")
+    );
 
   }, []);
 
@@ -158,6 +167,25 @@ export default function ConfirmacionPage() {
           </p>
 
         </div>
+
+        {/* RESULTADO DE MERCADO PAGO (Capítulo 7) */}
+        {estadoPagoMP && (
+          <div
+            className={`mx-auto mt-8 max-w-md rounded-3xl p-5 text-center font-bold ${
+              estadoPagoMP === "approved"
+                ? "bg-green-50 text-green-700"
+                : estadoPagoMP === "rejected" || estadoPagoMP === "null"
+                ? "bg-red-50 text-red-700"
+                : "bg-yellow-50 text-yellow-700"
+            }`}
+          >
+            {estadoPagoMP === "approved"
+              ? "✓ Pago aprobado por Mercado Pago"
+              : estadoPagoMP === "rejected" || estadoPagoMP === "null"
+              ? "✕ El pago no se completó. Tu pedido quedó registrado; puedes pagar por transferencia o contactar a Novedades Lucy."
+              : "⏳ Tu pago está en proceso. Te avisaremos cuando Mercado Pago lo confirme."}
+          </div>
+        )}
 
         {/* NUMERO DE PEDIDO */}
         <div className="mx-auto mt-8 max-w-md rounded-3xl border border-pink-100 bg-white p-6 text-center shadow-sm">

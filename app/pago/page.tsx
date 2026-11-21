@@ -32,13 +32,6 @@ export default function PagoPage() {
 
   const [guardando, setGuardando] = useState(false);
 
-  const [tarjeta, setTarjeta] = useState({
-    numero: "",
-    nombre: "",
-    vencimiento: "",
-    cvv: "",
-  });
-
   useEffect(() => {
     const carritoGuardado = localStorage.getItem(
       "novedades-lucy-carrito"
@@ -88,20 +81,6 @@ export default function PagoPage() {
       return false;
     }
 
-    if (metodoPago === "tarjeta") {
-      if (
-        !tarjeta.numero ||
-        !tarjeta.nombre ||
-        !tarjeta.vencimiento ||
-        !tarjeta.cvv
-      ) {
-        alert(
-          "Completa todos los datos de la tarjeta para continuar."
-        );
-
-        return false;
-      }
-    }
 
     return true;
   };
@@ -228,6 +207,29 @@ export default function PagoPage() {
       JSON.stringify(pedido)
     );
 
+    // Capítulo 7: con tarjeta, se paga en Mercado Pago (Checkout Pro).
+    // La Edge Function "crear-preferencia" usa el Access Token secreto.
+    if (metodoPago === "tarjeta") {
+      const { data: preferencia, error: errorMP } =
+        await supabase.functions.invoke("crear-preferencia", {
+          body: { folio: respuesta.folio },
+        });
+
+      const urlPago = (preferencia as { init_point?: string } | null)
+        ?.init_point;
+
+      if (!errorMP && urlPago) {
+        window.location.href = urlPago;
+        return;
+      }
+
+      console.error("Mercado Pago:", errorMP, preferencia);
+      alert(
+        `Tu pedido ${respuesta.folio} quedó registrado, pero no pudimos abrir Mercado Pago. ` +
+          "Puedes pagar por transferencia o contactar a Novedades Lucy."
+      );
+    }
+
     window.location.href = "/confirmacion";
   };
 
@@ -334,11 +336,11 @@ export default function PagoPage() {
                 </div>
 
                 <p className="mt-3 font-black text-[#70409a]">
-                  Pago con tarjeta
+                  Tarjeta (Mercado Pago)
                 </p>
 
                 <p className="mt-1 text-sm text-gray-500">
-                  Tarjeta de crédito o débito.
+                  Crédito, débito y otros medios en Mercado Pago.
                 </p>
 
                 {metodoPago === "tarjeta" && (
@@ -417,105 +419,21 @@ export default function PagoPage() {
 
             </div>
 
-            {/* DATOS TARJETA */}
+            {/* MERCADO PAGO (Capítulo 7) */}
             {metodoPago === "tarjeta" && (
-              <div className="mt-6 rounded-2xl border border-pink-200 bg-pink-50 p-6">
-
+              <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-6">
                 <h3 className="text-xl font-black text-[#70409a]">
-                  Datos de tarjeta
+                  Pago seguro con Mercado Pago
                 </h3>
-
-                <p className="mt-1 text-sm text-gray-600">
-                  Ingresa los datos para esta demostración.
-                  No se realizará ningún cargo real.
+                <p className="mt-2 text-sm text-gray-600">
+                  Al confirmar tu pedido te llevaremos a Mercado Pago para pagar
+                  con tarjeta de crédito, débito u otros medios. Novedades Lucy
+                  nunca ve ni guarda los datos de tu tarjeta.
                 </p>
-
-                <div className="mt-5 space-y-4">
-
-                  <div>
-                    <label className="text-sm font-bold">
-                      Número de tarjeta
-                    </label>
-
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0000 0000 0000 0000"
-                      value={tarjeta.numero}
-                      onChange={(e) =>
-                        setTarjeta({
-                          ...tarjeta,
-                          numero: e.target.value,
-                        })
-                      }
-                      className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#ef4b91]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-bold">
-                      Nombre del titular
-                    </label>
-
-                    <input
-                      type="text"
-                      placeholder="Nombre completo"
-                      value={tarjeta.nombre}
-                      onChange={(e) =>
-                        setTarjeta({
-                          ...tarjeta,
-                          nombre: e.target.value,
-                        })
-                      }
-                      className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#ef4b91]"
-                    />
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-
-                    <div>
-                      <label className="text-sm font-bold">
-                        Vencimiento
-                      </label>
-
-                      <input
-                        type="text"
-                        placeholder="MM/AA"
-                        value={tarjeta.vencimiento}
-                        onChange={(e) =>
-                          setTarjeta({
-                            ...tarjeta,
-                            vencimiento: e.target.value,
-                          })
-                        }
-                        className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#ef4b91]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-sm font-bold">
-                        CVV
-                      </label>
-
-                      <input
-                        type="password"
-                        inputMode="numeric"
-                        placeholder="123"
-                        value={tarjeta.cvv}
-                        onChange={(e) =>
-                          setTarjeta({
-                            ...tarjeta,
-                            cvv: e.target.value,
-                          })
-                        }
-                        className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#ef4b91]"
-                      />
-                    </div>
-
-                  </div>
-
-                </div>
-
+                <p className="mt-3 text-xs text-gray-500">
+                  Al terminar regresarás a esta tienda con la confirmación de tu
+                  pedido.
+                </p>
               </div>
             )}
 
