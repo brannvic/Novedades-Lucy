@@ -184,6 +184,12 @@ export default function ProductoPage() {
               </div>
             </div>
 
+            {producto.esTemporada && (
+              <p className="mt-4 rounded-2xl bg-purple-50 px-4 py-3 text-sm font-bold text-[#70409a]">
+                🎄 Precios de temporada (octubre a enero): incluyen +$20 por pieza.
+              </p>
+            )}
+
             {/* CANTIDAD */}
             <div className="mt-8">
               <p className="mb-3 font-bold text-[#70409a]">

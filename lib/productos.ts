@@ -1,7 +1,8 @@
 import { createClient } from "@/utils/supabase/client";
 
-// Capítulo 4: el catálogo ya no está escrito en el código,
-// se lee de la tabla `productos` en Supabase.
+// Capítulo 4: el catálogo ya no está escrito en el código, se lee de Supabase.
+// Capítulo 5: se lee de `vista_catalogo`, que ya trae los precios del día
+// (menudeo +$10 y recargo de temporada +$20 de octubre a enero).
 
 export type Producto = {
   id: number;
@@ -11,6 +12,8 @@ export type Producto = {
   descripcion: string | null;
   precioMenudeo: number;
   precioMayoreo: number;
+  precioLista: number;
+  esTemporada: boolean;
   existencias: number;
   emoji: string;
   imagenUrl: string | null;
@@ -33,13 +36,15 @@ type FilaProducto = {
   descripcion: string | null;
   precio_menudeo: number | string;
   precio_mayoreo: number | string;
+  precio_lista: number | string;
+  es_temporada: boolean;
   existencias: number;
   emoji: string | null;
   imagen_url: string | null;
 };
 
 const COLUMNAS =
-  "id, nombre, modelo, categoria, descripcion, precio_menudeo, precio_mayoreo, existencias, emoji, imagen_url";
+  "id, nombre, modelo, categoria, descripcion, precio_menudeo, precio_mayoreo, precio_lista, es_temporada, existencias, emoji, imagen_url";
 
 function aProducto(fila: FilaProducto): Producto {
   return {
@@ -50,6 +55,8 @@ function aProducto(fila: FilaProducto): Producto {
     descripcion: fila.descripcion,
     precioMenudeo: Number(fila.precio_menudeo),
     precioMayoreo: Number(fila.precio_mayoreo),
+    precioLista: Number(fila.precio_lista),
+    esTemporada: fila.es_temporada,
     existencias: fila.existencias,
     emoji: fila.emoji ?? "🧸",
     imagenUrl: fila.imagen_url,
@@ -59,7 +66,7 @@ function aProducto(fila: FilaProducto): Producto {
 export async function obtenerProductos(): Promise<Producto[]> {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("productos")
+    .from("vista_catalogo")
     .select(COLUMNAS)
     .order("categoria")
     .order("nombre");
@@ -74,7 +81,7 @@ export async function obtenerProductos(): Promise<Producto[]> {
 export async function obtenerProducto(id: number): Promise<Producto | null> {
   const supabase = createClient();
   const { data, error } = await supabase
-    .from("productos")
+    .from("vista_catalogo")
     .select(COLUMNAS)
     .eq("id", id)
     .maybeSingle();

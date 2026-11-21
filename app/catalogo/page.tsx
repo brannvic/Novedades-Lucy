@@ -103,6 +103,13 @@ return (
           </p>
         </div>
 
+        {productos.some((p) => p.esTemporada) && (
+          <div className="mb-5 rounded-2xl border border-purple-100 bg-purple-50 px-5 py-3 text-sm font-bold text-[#70409a]">
+            🎄 Temporada alta (octubre a enero): los precios incluyen +$20 por pieza.
+            Mayoreo a partir de 3 piezas.
+          </div>
+        )}
+
         {/* BUSCADOR */}
         <div className="mb-5">
           <input
