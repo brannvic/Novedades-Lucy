@@ -83,6 +83,25 @@ export default function PanelLucy() {
     setEntrando(false);
   };
 
+  const [avisoCorreo, setAvisoCorreo] = useState("");
+
+  const olvideContrasena = async () => {
+    setError("");
+    setAvisoCorreo("");
+    if (!correo.trim()) {
+      setError("Escribe tu correo arriba primero.");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), {
+      redirectTo: `${window.location.origin}/restablecer`,
+    });
+    if (error) {
+      setError("No se pudo enviar el correo. Intenta en un momento.");
+      return;
+    }
+    setAvisoCorreo("Te mandamos un correo. Ábrelo en este mismo teléfono para poner tu contraseña nueva.");
+  };
+
   const salir = async () => {
     await supabase.auth.signOut();
     setUsuario(null);
@@ -135,6 +154,14 @@ export default function PanelLucy() {
               className="h-16 w-full rounded-full bg-[#ef4b91] text-2xl font-black text-white disabled:opacity-60"
             >
               {entrando ? "Entrando..." : "Entrar"}
+            </button>
+            {avisoCorreo && <Aviso tipo="ok">{avisoCorreo}</Aviso>}
+            <button
+              type="button"
+              onClick={olvideContrasena}
+              className="w-full text-center text-lg font-bold text-[#70409a] underline"
+            >
+              ¿Olvidaste tu contraseña?
             </button>
           </form>
         </div>

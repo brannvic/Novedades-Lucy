@@ -146,6 +146,26 @@ export default function CuentaPage() {
     }
   };
 
+  const olvideContrasena = async () => {
+    setError("");
+    setMensaje("");
+    const correo = formulario.correo.trim();
+    if (!correo) {
+      setError("Escribe tu correo arriba y vuelve a tocar \"¿Olvidaste tu contraseña?\".");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(correo, {
+      redirectTo: `${window.location.origin}/restablecer`,
+    });
+    if (error) {
+      setError("No pudimos enviar el correo. Espera un momento e intenta otra vez.");
+      return;
+    }
+    setMensaje(
+      "Te enviamos un correo con un enlace para cambiar tu contraseña. Ábrelo en este mismo teléfono o computadora."
+    );
+  };
+
   const cerrarSesion = async () => {
     await supabase.auth.signOut();
     setPerfil(null);
@@ -327,6 +347,16 @@ export default function CuentaPage() {
                   : "Crear cuenta"}
               </button>
             </form>
+
+            {modo === "entrar" && (
+              <button
+                type="button"
+                onClick={olvideContrasena}
+                className="mt-4 block w-full text-center text-sm font-bold text-[#70409a] underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            )}
 
             <p className="mt-6 text-center text-sm text-gray-500">
               ¿Compraste sin cuenta?{" "}
