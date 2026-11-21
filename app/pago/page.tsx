@@ -175,6 +175,12 @@ export default function PagoPage() {
     setGuardando(true);
 
     const supabase = createClient();
+
+    // Capítulo 6: si hay sesión, el pedido queda ligado a la cuenta
+    const { data: sesion } = await supabase.auth.getUser();
+    if (sesion.user?.email) {
+      (datos.cliente as { correo?: string }).correo = sesion.user.email;
+    }
     const { data, error } = await supabase.rpc("crear_pedido", {
       datos,
     });

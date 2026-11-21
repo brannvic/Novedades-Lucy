@@ -1,99 +1,183 @@
 "use client";
 
+// Capítulo 6: "Mis pedidos" con datos reales de Supabase.
+// · Con sesión: muestra los pedidos ligados a la cuenta (RLS).
+// · Sin sesión: consulta un pedido con folio + teléfono.
+
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
 
-type EstadoPedido =
-  | "recibido"
-  | "pago_confirmado"
-  | "preparando"
-  | "enviado"
-  | "listo_para_recoger"
-  | "entregado"
-  | "cancelado"
-  | "devolucion_solicitada"
-  | "devuelto";
+type Item = {
+  descripcion: string;
+  cantidad: number;
+  precio_unitario: number;
+};
 
-type TipoEntrega = "envio" | "recogida";
+type Pedido = {
+  id: number;
+  folio: string;
+  estado: string;
+  modalidad: string;
+  metodo_pago: string;
+  tipo_entrega: "paqueteria" | "presencial";
+  fecha_entrega: string;
+  total: number;
+  es_temporada: boolean;
+  creado_en: string;
+  items: Item[];
+  envio: {
+    direccion: string;
+    ciudad: string;
+    paqueteria: string | null;
+    numero_rastreo: string | null;
+    url_rastreo: string | null;
+  } | null;
+  entrega: {
+    punto_entrega: string;
+    fecha_recogida: string;
+  } | null;
+};
+
+const ESTADOS: Record<string, { texto: string; color: string }> = {
+  pendiente: { texto: "🟡 Pendiente", color: "bg-yellow-50 text-yellow-700" },
+  preparando: { texto: "🔵 Preparando pedido", color: "bg-blue-50 text-blue-700" },
+  listo: { texto: "🟣 Listo para entrega", color: "bg-purple-50 text-purple-700" },
+  enviado: { texto: "📦 Enviado", color: "bg-indigo-50 text-indigo-700" },
+  entregado: { texto: "🟢 Entregado", color: "bg-green-50 text-green-700" },
+  cancelado: { texto: "🔴 Cancelado", color: "bg-red-50 text-red-700" },
+  devolucion_solicitada: { texto: "🟠 Devolución solicitada", color: "bg-orange-50 text-orange-700" },
+  devuelto: { texto: "⚪ Devuelto", color: "bg-gray-100 text-gray-600" },
+};
+
+const PASOS_ENVIO = [
+  { id: "pendiente", titulo: "Pedido recibido" },
+  { id: "preparando", titulo: "Preparando pedido" },
+  { id: "listo", titulo: "Listo para envío" },
+  { id: "enviado", titulo: "Enviado por paquetería" },
+  { id: "entregado", titulo: "Entregado" },
+];
+
+const PASOS_RECOGIDA = [
+  { id: "pendiente", titulo: "Pedido recibido" },
+  { id: "preparando", titulo: "Preparando pedido" },
+  { id: "listo", titulo: "Listo para recoger" },
+  { id: "entregado", titulo: "Entregado" },
+];
+
+const METODOS: Record<string, string> = {
+  transferencia: "Transferencia",
+  tarjeta: "Tarjeta",
+  efectivo: "Efectivo",
+};
+
+function unoONulo<T>(valor: T | T[] | null | undefined): T | null {
+  if (Array.isArray(valor)) return valor[0] ?? null;
+  return valor ?? null;
+}
+
+function formatearFecha(fecha: string) {
+  if (!fecha) return "—";
+  const [y, m, d] = fecha.slice(0, 10).split("-");
+  return `${d}/${m}/${y}`;
+}
 
 export default function PedidosPage() {
-  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(false);
+  const [supabase] = useState(() => createClient());
 
-  // Este estado después vendrá desde Supabase
-  const [estado] = useState<EstadoPedido>("preparando");
+  const [usuario, setUsuario] = useState<User | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [seleccionado, setSeleccionado] = useState<Pedido | null>(null);
 
-  // Este valor después vendrá desde el pedido guardado
-  const [tipoEntrega] = useState<TipoEntrega>("envio");
+  const [folio, setFolio] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [buscando, setBuscando] = useState(false);
+  const [error, setError] = useState("");
 
-  const direccionRecogida =
-    "Girón 33, Centro Histórico de la Cdad. de México, Centro, Cuauhtémoc, 06020 Ciudad de México, CDMX";
+  // Sesión + pedidos de la cuenta
+  useEffect(() => {
+    const cargar = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUsuario(data.user);
 
-  const pasosEnvio = [
-    {
-      id: "recibido",
-      titulo: "Pedido recibido",
-      descripcion: "Hemos recibido correctamente tu pedido.",
-    },
-    {
-      id: "pago_confirmado",
-      titulo: "Pago confirmado",
-      descripcion: "El pago de tu pedido ha sido confirmado.",
-    },
-    {
-      id: "preparando",
-      titulo: "Preparando pedido",
-      descripcion: "Estamos preparando tus productos.",
-    },
-    {
-      id: "enviado",
-      titulo: "Pedido enviado",
-      descripcion: "Tu pedido fue entregado a la paquetería.",
-    },
-    {
-      id: "entregado",
-      titulo: "Pedido entregado",
-      descripcion: "Tu pedido ha sido entregado.",
-    },
-  ];
+      if (data.user) {
+        const { data: filas } = await supabase
+          .from("pedidos")
+          .select(
+            "id, folio, estado, modalidad, metodo_pago, tipo_entrega, fecha_entrega, total, es_temporada, creado_en, pedido_items(descripcion, cantidad, precio_unitario), envios(direccion, ciudad, paqueteria, numero_rastreo, url_rastreo), entregas_presenciales(punto_entrega, fecha_recogida)"
+          )
+          .order("creado_en", { ascending: false });
 
-  const pasosRecogida = [
-    {
-      id: "recibido",
-      titulo: "Pedido recibido",
-      descripcion: "Hemos recibido correctamente tu pedido.",
-    },
-    {
-      id: "pago_confirmado",
-      titulo: "Pago confirmado",
-      descripcion: "El pago de tu pedido ha sido confirmado.",
-    },
-    {
-      id: "preparando",
-      titulo: "Preparando pedido",
-      descripcion: "Estamos preparando tus productos.",
-    },
-    {
-      id: "listo_para_recoger",
-      titulo: "Listo para recoger",
-      descripcion: "Tu pedido está listo para recogerse.",
-    },
-    {
-      id: "entregado",
-      titulo: "Pedido entregado",
-      descripcion: "El pedido fue entregado.",
-    },
-  ];
+        setPedidos(
+          (filas ?? []).map((f) => ({
+            ...(f as unknown as Pedido),
+            total: Number(f.total),
+            items: (f.pedido_items ?? []) as Item[],
+            envio: unoONulo(f.envios as Pedido["envio"] | Pedido["envio"][]),
+            entrega: unoONulo(
+              f.entregas_presenciales as Pedido["entrega"] | Pedido["entrega"][]
+            ),
+          }))
+        );
+      } else {
+        // Precargar el último pedido hecho en este navegador
+        try {
+          const guardado = JSON.parse(
+            localStorage.getItem("novedades-lucy-pedido") || "{}"
+          );
+          if (guardado.folio) setFolio(guardado.folio);
+          if (guardado.datosEnvio?.telefono) {
+            setTelefono(guardado.datosEnvio.telefono);
+          }
+        } catch {
+          // sin pedido previo
+        }
+      }
 
-  const pasos =
-    tipoEntrega === "envio" ? pasosEnvio : pasosRecogida;
+      setCargando(false);
+    };
 
-  const obtenerPosicionEstado = () => {
-    const posicion = pasos.findIndex((paso) => paso.id === estado);
+    cargar();
+  }, [supabase]);
 
-    return posicion === -1 ? 0 : posicion;
+  const buscarPorFolio = async (evento: React.FormEvent) => {
+    evento.preventDefault();
+    setError("");
+
+    if (!folio.trim() || !telefono.trim()) {
+      setError("Escribe tu folio y tu teléfono.");
+      return;
+    }
+
+    setBuscando(true);
+    const { data, error } = await supabase.rpc("consultar_pedido", {
+      p_folio: folio.trim().toUpperCase(),
+      p_telefono: telefono.trim(),
+    });
+    setBuscando(false);
+
+    if (error || !data) {
+      setError("No encontramos un pedido con ese folio y teléfono.");
+      return;
+    }
+
+    const r = data as {
+      pedido: Omit<Pedido, "items" | "envio" | "entrega">;
+      items: Item[];
+      envio: Pedido["envio"];
+      entrega_presencial: Pedido["entrega"];
+    };
+
+    setSeleccionado({
+      ...r.pedido,
+      total: Number(r.pedido.total),
+      items: r.items,
+      envio: r.envio,
+      entrega: r.entrega_presencial,
+    });
   };
-
-  const posicionActual = obtenerPosicionEstado();
 
   return (
     <main className="min-h-screen bg-[#fff7fb] text-[#4a2857]">
@@ -102,335 +186,334 @@ export default function PedidosPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <div className="text-3xl">💗</div>
-
             <div className="leading-none">
-              <p className="text-sm font-bold text-[#70409a]">
-                Novedades
-              </p>
-
-              <h1 className="text-2xl font-black text-[#ef4b91]">
-                Lucy
-              </h1>
+              <p className="text-sm font-bold text-[#70409a]">Novedades</p>
+              <h1 className="text-2xl font-black text-[#ef4b91]">Lucy</h1>
             </div>
           </Link>
 
-          <Link
-            href="/menu"
-            className="rounded-full px-5 py-2 font-bold text-[#70409a] hover:bg-pink-50"
-          >
-            ☰ Menú
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/cuenta"
+              className="rounded-full px-4 py-2 text-sm font-bold text-[#70409a] hover:bg-pink-50"
+            >
+              👤 {usuario ? "Mi cuenta" : "Iniciar sesión"}
+            </Link>
+            <Link
+              href="/menu"
+              className="rounded-full px-5 py-2 font-bold text-[#70409a] hover:bg-pink-50"
+            >
+              ☰ Menú
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* CONTENIDO */}
       <section className="mx-auto max-w-4xl px-6 py-12">
-        {!pedidoSeleccionado ? (
+        {seleccionado ? (
+          <DetallePedido
+            pedido={seleccionado}
+            onVolver={() => setSeleccionado(null)}
+          />
+        ) : (
           <>
-            {/* TÍTULO */}
             <div className="mb-8">
               <p className="text-4xl">📦</p>
-
               <h2 className="mt-3 text-3xl font-black text-[#6d3b91]">
                 Mis pedidos
               </h2>
-
               <p className="mt-2 text-gray-500">
-                Consulta tus pedidos y revisa el estado en el que
-                se encuentran.
+                Consulta tus pedidos y revisa el estado en el que se encuentran.
               </p>
             </div>
 
-            {/* PEDIDO */}
-            <div className="rounded-[2rem] bg-white p-6 shadow-sm md:p-8">
-              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-bold text-[#70409a]">
-                    Pedido
+            {cargando ? (
+              <p className="font-bold text-[#70409a]">Cargando pedidos...</p>
+            ) : usuario ? (
+              pedidos.length === 0 ? (
+                <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
+                  <p className="text-5xl">🛍️</p>
+                  <p className="mt-4 font-bold text-[#70409a]">
+                    Aún no tienes pedidos con esta cuenta.
                   </p>
-
-                  <h3 className="mt-1 text-2xl font-black text-[#6d3b91]">
-                    #PED-001
-                  </h3>
-
-                  <p className="mt-2 text-sm text-gray-500">
-                    2 productos
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    Fecha: 28/09/2026
-                  </p>
+                  <Link
+                    href="/catalogo"
+                    className="mt-6 inline-block rounded-full bg-[#ef4b91] px-7 py-3 font-bold text-white"
+                  >
+                    Ir al catálogo
+                  </Link>
                 </div>
-
-                <div className="text-left md:text-right">
-                  <p className="text-sm text-gray-500">
-                    Total
-                  </p>
-
-                  <p className="text-2xl font-black text-[#ef4b91]">
-                    $850
-                  </p>
-
-                  <span className="mt-2 inline-block rounded-full bg-purple-50 px-4 py-1 text-sm font-bold text-[#70409a]">
-                    {tipoEntrega === "envio"
-                      ? "🚚 Envío"
-                      : "🏪 Recogida presencial"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="my-6 border-t border-pink-100" />
-
-              {/* ESTADO ACTUAL */}
-              <div className="rounded-2xl bg-[#fff7fb] p-5">
-                <p className="text-sm font-bold text-gray-500">
-                  Estado actual
-                </p>
-
-                <p className="mt-1 text-xl font-black text-[#70409a]">
-                  {pasos[posicionActual]?.titulo}
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  {pasos[posicionActual]?.descripcion}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setPedidoSeleccionado(true)}
-                className="mt-6 w-full rounded-full bg-[#ef4b91] px-6 py-3 font-bold text-white transition hover:bg-[#df3d82]"
-              >
-                Ver seguimiento del pedido
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* DETALLE */}
-            <div className="mb-8">
-              <button
-                onClick={() => setPedidoSeleccionado(false)}
-                className="font-bold text-[#70409a] hover:underline"
-              >
-                ← Regresar a mis pedidos
-              </button>
-
-              <p className="mt-6 text-4xl">📦</p>
-
-              <h2 className="mt-3 text-3xl font-black text-[#6d3b91]">
-                Pedido #PED-001
-              </h2>
-
-              <p className="mt-2 text-gray-500">
-                Seguimiento de tu pedido.
-              </p>
-            </div>
-
-            <div className="rounded-[2rem] bg-white p-6 shadow-sm md:p-8">
-              {/* INFORMACIÓN */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl bg-[#fff7fb] p-4">
-                  <p className="text-sm text-gray-500">
-                    Fecha del pedido
-                  </p>
-
-                  <p className="mt-1 font-bold text-[#70409a]">
-                    28/09/2026
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-[#fff7fb] p-4">
-                  <p className="text-sm text-gray-500">
-                    Total
-                  </p>
-
-                  <p className="mt-1 font-bold text-[#ef4b91]">
-                    $850
-                  </p>
-                </div>
-              </div>
-
-              {/* TIPO DE ENTREGA */}
-              <div className="mt-6 rounded-2xl bg-purple-50 p-5">
-                <p className="font-bold text-[#70409a]">
-                  {tipoEntrega === "envio"
-                    ? "🚚 Método de entrega"
-                    : "🏪 Método de entrega"}
-                </p>
-
-                <p className="mt-1 font-black text-[#6d3b91]">
-                  {tipoEntrega === "envio"
-                    ? "Envío por paquetería"
-                    : "Recogida presencial"}
-                </p>
-
-                {tipoEntrega === "recogida" && (
-                  <div className="mt-3 rounded-xl bg-white p-4">
-                    <p className="text-sm font-bold text-[#70409a]">
-                      📍 Dirección de recogida
-                    </p>
-
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
-                      {direccionRecogida}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* SEGUIMIENTO */}
-              <div className="mt-8">
-                <h3 className="text-xl font-black text-[#70409a]">
-                  Estado del pedido
-                </h3>
-
-                <div className="mt-6 space-y-0">
-                  {pasos.map((paso, index) => {
-                    const completado =
-                      index < posicionActual;
-
-                    const actual =
-                      index === posicionActual;
-
-                    return (
-                      <div
-                        key={paso.id}
-                        className="relative flex gap-4"
-                      >
-                        {/* LÍNEA */}
-                        {index < pasos.length - 1 && (
-                          <div
-                            className={`absolute left-[15px] top-8 h-full w-[2px] ${
-                              index < posicionActual
-                                ? "bg-[#ef4b91]"
-                                : "bg-pink-100"
-                            }`}
-                          />
-                        )}
-
-                        {/* CÍRCULO */}
-                        <div
-                          className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-black ${
-                            completado
-                              ? "bg-[#ef4b91] text-white"
-                              : actual
-                              ? "bg-[#70409a] text-white"
-                              : "bg-pink-100 text-[#70409a]"
+              ) : (
+                <div className="space-y-4">
+                  {pedidos.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSeleccionado(p)}
+                      className="block w-full rounded-3xl border border-pink-100 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-xl font-black text-[#70409a]">
+                          #{p.folio}
+                        </p>
+                        <span
+                          className={`rounded-full px-3 py-1 text-sm font-bold ${
+                            ESTADOS[p.estado]?.color ?? "bg-gray-100"
                           }`}
                         >
-                          {completado
-                            ? "✓"
-                            : actual
-                            ? "●"
-                            : "○"}
-                        </div>
-
-                        {/* TEXTO */}
-                        <div className="pb-8">
-                          <p
-                            className={`font-black ${
-                              actual || completado
-                                ? "text-[#6d3b91]"
-                                : "text-gray-400"
-                            }`}
-                          >
-                            {paso.titulo}
-                          </p>
-
-                          <p
-                            className={`mt-1 text-sm ${
-                              actual || completado
-                                ? "text-gray-500"
-                                : "text-gray-300"
-                            }`}
-                          >
-                            {paso.descripcion}
-                          </p>
-                        </div>
+                          {ESTADOS[p.estado]?.texto ?? p.estado}
+                        </span>
                       </div>
-                    );
-                  })}
+                      <p className="mt-2 text-sm text-gray-500">
+                        {p.items
+                          .map((i) => `${i.descripcion} x${i.cantidad}`)
+                          .join(" · ")}
+                      </p>
+                      <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm">
+                        <span>
+                          {p.tipo_entrega === "paqueteria"
+                            ? "📦 Envío"
+                            : "🏪 Recogida"}{" "}
+                          · {formatearFecha(p.fecha_entrega)}
+                        </span>
+                        <span className="font-black text-[#ef4b91]">
+                          ${p.total}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* CONSULTA POR FOLIO */}
+                <form
+                  onSubmit={buscarPorFolio}
+                  className="rounded-3xl bg-white p-6 shadow-sm"
+                >
+                  <h3 className="text-xl font-black text-[#70409a]">
+                    Consultar con mi folio
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    El folio aparece en tu confirmación (ej. NL-0001).
+                  </p>
+
+                  <input
+                    value={folio}
+                    onChange={(e) => setFolio(e.target.value)}
+                    placeholder="Folio"
+                    className="mt-4 w-full rounded-2xl border border-pink-100 px-4 py-3 outline-none focus:border-[#ef4b91]"
+                  />
+                  <input
+                    value={telefono}
+                    onChange={(e) => setTelefono(e.target.value)}
+                    placeholder="Teléfono con el que compraste"
+                    type="tel"
+                    className="mt-3 w-full rounded-2xl border border-pink-100 px-4 py-3 outline-none focus:border-[#ef4b91]"
+                  />
+
+                  {error && (
+                    <p className="mt-3 text-sm font-bold text-red-600">
+                      {error}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={buscando}
+                    className="mt-4 w-full rounded-full bg-[#ef4b91] px-6 py-3 font-bold text-white disabled:opacity-60"
+                  >
+                    {buscando ? "Buscando..." : "Consultar pedido"}
+                  </button>
+                </form>
+
+                {/* INVITACIÓN A CUENTA */}
+                <div className="rounded-3xl bg-gradient-to-br from-[#ffe5f0] to-[#eadcf5] p-6">
+                  <h3 className="text-xl font-black text-[#70409a]">
+                    ¿Compras seguido?
+                  </h3>
+                  <p className="mt-2 text-sm text-[#4a2857]">
+                    Crea tu cuenta y todos tus pedidos aparecerán aquí
+                    automáticamente, sin buscar folios.
+                  </p>
+                  <Link
+                    href="/cuenta"
+                    className="mt-6 inline-block rounded-full bg-[#70409a] px-6 py-3 font-bold text-white"
+                  >
+                    👤 Iniciar sesión / Crear cuenta
+                  </Link>
                 </div>
               </div>
-
-              {/* ENVÍO */}
-              {tipoEntrega === "envio" &&
-                (estado === "enviado" ||
-                  estado === "entregado") && (
-                  <div className="mt-6 rounded-2xl bg-blue-50 p-5">
-                    <p className="font-bold text-blue-700">
-                      📦 Información de envío
-                    </p>
-
-                    <p className="mt-1 text-sm text-gray-600">
-                      Tu pedido fue enviado mediante la
-                      paquetería seleccionada.
-                    </p>
-
-                    <p className="mt-3 text-sm font-bold text-[#70409a]">
-                      Número de guía
-                    </p>
-
-                    <p className="mt-1 font-black">
-                      Pendiente de asignación
-                    </p>
-                  </div>
-                )}
-
-              {/* RECOGIDA */}
-              {tipoEntrega === "recogida" &&
-                estado === "listo_para_recoger" && (
-                  <div className="mt-6 rounded-2xl bg-green-50 p-5">
-                    <p className="font-bold text-green-700">
-                      🏪 Tu pedido está listo para recoger
-                    </p>
-
-                    <p className="mt-2 text-sm leading-6 text-gray-600">
-                      Puedes recoger tu pedido en:
-                    </p>
-
-                    <p className="mt-2 font-bold text-[#70409a]">
-                      {direccionRecogida}
-                    </p>
-                  </div>
-                )}
-
-              {/* CANCELADO */}
-              {estado === "cancelado" && (
-                <div className="mt-6 rounded-2xl bg-red-50 p-5">
-                  <p className="font-bold text-red-700">
-                    ❌ Pedido cancelado
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-600">
-                    Este pedido ha sido cancelado.
-                  </p>
-                </div>
-              )}
-
-              {/* DEVOLUCIÓN */}
-              {(estado === "devolucion_solicitada" ||
-                estado === "devuelto") && (
-                <div className="mt-6 rounded-2xl bg-yellow-50 p-5">
-                  <p className="font-bold text-yellow-700">
-                    ↩️ Devolución
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-600">
-                    Tu solicitud de devolución se encuentra registrada.
-                  </p>
-                </div>
-              )}
-            </div>
+            )}
           </>
         )}
       </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-pink-100 bg-white py-6 text-center">
-        <p className="text-sm text-gray-500">
-          © 2026 Novedades Lucy · Tienda de muñecos artesanales
-        </p>
-      </footer>
     </main>
+  );
+}
+
+function DetallePedido({
+  pedido,
+  onVolver,
+}: {
+  pedido: Pedido;
+  onVolver: () => void;
+}) {
+  const pasos =
+    pedido.tipo_entrega === "paqueteria" ? PASOS_ENVIO : PASOS_RECOGIDA;
+  const posicion = Math.max(
+    0,
+    pasos.findIndex((p) => p.id === pedido.estado)
+  );
+  const fueraDeFlujo = [
+    "cancelado",
+    "devolucion_solicitada",
+    "devuelto",
+  ].includes(pedido.estado);
+
+  return (
+    <div className="rounded-[2rem] bg-white p-6 shadow-sm md:p-10">
+      <button
+        type="button"
+        onClick={onVolver}
+        className="text-sm font-bold text-[#70409a] hover:underline"
+      >
+        ← Volver a mis pedidos
+      </button>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-3xl font-black text-[#70409a]">
+          Pedido #{pedido.folio}
+        </h2>
+        <span
+          className={`rounded-full px-4 py-2 text-sm font-bold ${
+            ESTADOS[pedido.estado]?.color ?? "bg-gray-100"
+          }`}
+        >
+          {ESTADOS[pedido.estado]?.texto ?? pedido.estado}
+        </span>
+      </div>
+
+      {/* SEGUIMIENTO */}
+      {!fueraDeFlujo && (
+        <ol className="mt-8 space-y-4">
+          {pasos.map((paso, i) => (
+            <li key={paso.id} className="flex items-center gap-4">
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-black ${
+                  i <= posicion
+                    ? "bg-[#ef4b91] text-white"
+                    : "bg-gray-100 text-gray-400"
+                }`}
+              >
+                {i < posicion ? "✓" : i + 1}
+              </span>
+              <span
+                className={
+                  i <= posicion ? "font-bold text-[#70409a]" : "text-gray-400"
+                }
+              >
+                {paso.titulo}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {/* PRODUCTOS */}
+      <div className="mt-8 rounded-2xl bg-pink-50 p-5">
+        {pedido.items.map((item, i) => (
+          <div key={i} className="flex justify-between py-1 text-sm">
+            <span>
+              {item.descripcion} x{item.cantidad}
+            </span>
+            <span className="font-bold">
+              ${Number(item.precio_unitario) * item.cantidad}
+            </span>
+          </div>
+        ))}
+        <div className="mt-3 flex justify-between border-t border-pink-200 pt-3">
+          <span className="font-black">TOTAL</span>
+          <span className="text-xl font-black text-[#ef4b91]">
+            ${pedido.total}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-gray-500">
+          {pedido.modalidad === "mayoreo" ? "Precio de mayoreo" : "Precio de menudeo"}
+          {pedido.es_temporada ? " · incluye precio de temporada" : ""}
+        </p>
+      </div>
+
+      {/* ENTREGA Y PAGO */}
+      <div className="mt-6 grid gap-4 text-sm md:grid-cols-2">
+        <div className="rounded-2xl border border-pink-100 p-5">
+          <p className="font-black text-[#70409a]">
+            {pedido.tipo_entrega === "paqueteria"
+              ? "📦 Envío por paquetería"
+              : "🏪 Recogida presencial"}
+          </p>
+          {pedido.tipo_entrega === "paqueteria" ? (
+            <>
+              <p className="mt-2">
+                {pedido.envio?.direccion}, {pedido.envio?.ciudad}
+              </p>
+              <p className="mt-2">
+                Código de rastreo:{" "}
+                <span className="font-bold">
+                  {pedido.envio?.numero_rastreo ?? "Pendiente"}
+                </span>
+              </p>
+              {pedido.envio?.url_rastreo && (
+                <a
+                  href={pedido.envio.url_rastreo}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-block rounded-full bg-[#70409a] px-5 py-2 font-bold text-white"
+                >
+                  Rastrear envío
+                </a>
+              )}
+            </>
+          ) : (
+            <p className="mt-2">📍 {pedido.entrega?.punto_entrega}</p>
+          )}
+          <p className="mt-2">
+            📅 {formatearFecha(pedido.fecha_entrega)}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-pink-100 p-5">
+          <p className="font-black text-[#70409a]">💳 Pago</p>
+          <p className="mt-2">
+            {METODOS[pedido.metodo_pago] ?? pedido.metodo_pago}
+          </p>
+          <p className="mt-2 text-gray-500">
+            Pedido realizado el {formatearFecha(pedido.creado_en)}
+          </p>
+        </div>
+      </div>
+
+      {/* ACCIONES */}
+      {!fueraDeFlujo && pedido.estado !== "entregado" && (
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/cancelar"
+            className="rounded-full border-2 border-red-300 px-5 py-2 font-bold text-red-600 hover:bg-red-50"
+          >
+            Cancelar pedido
+          </Link>
+        </div>
+      )}
+      {pedido.estado === "entregado" && (
+        <div className="mt-6">
+          <Link
+            href="/devolucion"
+            className="rounded-full border-2 border-[#70409a] px-5 py-2 font-bold text-[#70409a] hover:bg-purple-50"
+          >
+            Solicitar devolución
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }

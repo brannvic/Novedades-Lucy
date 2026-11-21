@@ -431,10 +431,10 @@ export default function ConfirmacionPage() {
           </a>
 
           <a
-            href="/"
+            href="/pedidos"
             className="rounded-full bg-[#ef4b91] px-7 py-4 text-center font-bold text-white shadow-md transition hover:bg-[#df3d82]"
           >
-            Volver al inicio
+            📦 Ver mi pedido
           </a>
 
         </div>
