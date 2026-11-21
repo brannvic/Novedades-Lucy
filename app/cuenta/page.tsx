@@ -35,6 +35,7 @@ export default function CuentaPage() {
 
   const [usuario, setUsuario] = useState<User | null>(null);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
+  const [esAdmin, setEsAdmin] = useState(false);
   const [cargando, setCargando] = useState(true);
 
   const [modo, setModo] = useState<Modo>("entrar");
@@ -75,6 +76,8 @@ export default function CuentaPage() {
       .eq("id", usuario.id)
       .maybeSingle()
       .then(({ data }) => setPerfil(data));
+
+    supabase.rpc("es_admin").then(({ data }) => setEsAdmin(Boolean(data)));
   }, [supabase, usuario]);
 
   const actualizarCampo = (campo: string, valor: string) => {
@@ -201,6 +204,15 @@ export default function CuentaPage() {
             </p>
 
             <div className="mt-6 grid gap-3">
+              {esAdmin && (
+                <Link
+                  href="/admin"
+                  className="rounded-full bg-[#70409a] px-6 py-4 text-center text-lg font-black text-white shadow-md"
+                >
+                  💗 Abrir Panel de Lucy
+                </Link>
+              )}
+
               <Link
                 href="/pedidos"
                 className="rounded-full bg-[#ef4b91] px-6 py-4 text-center font-bold text-white shadow-md hover:bg-[#df3d82]"
