@@ -1,63 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { obtenerProducto, type Producto } from "@/lib/productos";
 import { useParams } from "next/navigation";
-
-const productos = [
-  {
-    id: 1,
-    nombre: "Muñeca artesanal",
-    modelo: "Modelo Lucy",
-    categoria: "Muñecas",
-    precioMenudeo: 350,
-    precioMayoreo: 300,
-    emoji: "👧🏻",
-    descripcion:
-      "Muñeca artesanal elaborada para acompañar diferentes ocasiones. Disponible para compra individual o por mayoreo.",
-  },
-  {
-    id: 2,
-    nombre: "Bebé artesanal",
-    modelo: "Modelo Alex",
-    categoria: "Bebés",
-    precioMenudeo: 280,
-    precioMayoreo: 240,
-    emoji: "👶🏻",
-    descripcion:
-      "Bebé artesanal pensado para regalos y ocasiones especiales.",
-  },
-  {
-    id: 3,
-    nombre: "Muñeca con sonido",
-    modelo: "Modelo Sofía",
-    categoria: "Con sonido",
-    precioMenudeo: 420,
-    precioMayoreo: 360,
-    emoji: "👧🏼",
-    descripcion:
-      "Muñeca artesanal con función de sonido para una experiencia diferente.",
-  },
-  {
-    id: 4,
-    nombre: "Bebé artesanal",
-    modelo: "Modelo Emma",
-    categoria: "Bebés",
-    precioMenudeo: 300,
-    precioMayoreo: 260,
-    emoji: "👶🏼",
-    descripcion:
-      "Bebé artesanal disponible para compra individual y pedidos por volumen.",
-  },
-];
 
 export default function ProductoPage() {
   const params = useParams();
 
   const id = Number(params.id);
 
-  const producto = productos.find((p) => p.id === id);
+  const [producto, setProducto] = useState<Producto | null>(null);
+  const [cargando, setCargando] = useState(true);
 
   const [cantidad, setCantidad] = useState(1);
+
+  useEffect(() => {
+    const carga = Number.isFinite(id)
+      ? obtenerProducto(id)
+      : Promise.resolve(null);
+
+    carga
+      .then(setProducto)
+      .catch(() => setProducto(null))
+      .finally(() => setCargando(false));
+  }, [id]);
+
+  if (cargando) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#fff7fb]">
+        <p className="text-lg font-bold text-[#70409a]">Cargando producto...</p>
+      </main>
+    );
+  }
 
   if (!producto) {
     return (
@@ -166,12 +140,15 @@ export default function ProductoPage() {
               {producto.nombre}
             </h2>
 
-            <p className="mt-1 text-lg text-gray-500">
-              {producto.modelo}
-            </p>
+            {producto.modelo && (
+              <p className="mt-1 text-lg text-gray-500">
+                {producto.modelo}
+              </p>
+            )}
 
             <p className="mt-6 leading-7 text-gray-600">
-              {producto.descripcion}
+              {producto.descripcion ??
+                "Producto artesanal de Novedades Lucy. Disponible para compra individual o por mayoreo a partir de 3 piezas."}
             </p>
 
             {/* PRECIOS */}

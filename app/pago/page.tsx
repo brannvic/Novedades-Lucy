@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 type ProductoCarrito = {
+  id: number;
   nombre: string;
   modelo: string;
   cantidad: number;
@@ -27,6 +29,8 @@ export default function PagoPage() {
 
   const [fechaEntrega, setFechaEntrega] =
     useState("");
+
+  const [guardando, setGuardando] = useState(false);
 
   const [tarjeta, setTarjeta] = useState({
     numero: "",
@@ -102,7 +106,11 @@ export default function PagoPage() {
     return true;
   };
 
-  const confirmarPedido = () => {
+  const confirmarPedido = async () => {
+    if (guardando) {
+      return;
+    }
+
     if (!validarPago()) {
       return;
     }
@@ -115,17 +123,85 @@ export default function PagoPage() {
       return;
     }
 
+    if (!producto) {
+      alert("Tu carrito está vacío.");
+      return;
+    }
+
     const datosEnvio = JSON.parse(
       localStorage.getItem(
         "novedades-lucy-envio"
       ) || "{}"
     );
 
+    // Capítulo 4: el pedido se guarda en Supabase.
+    // La función crear_pedido() calcula el precio con la tabla productos
+    // y llena las pestañas de pagos y envíos / entregas en persona.
+    const fechaPorDefecto = new Date(
+      Date.now() + 3 * 24 * 60 * 60 * 1000
+    )
+      .toISOString()
+      .slice(0, 10);
+
+    const datos = {
+      cliente: {
+        nombre: datosEnvio.nombre ?? "",
+        telefono: datosEnvio.telefono ?? "",
+      },
+      items: [
+        {
+          producto_id: producto.id,
+          cantidad: producto.cantidad,
+        },
+      ],
+      metodo_pago: metodoPago,
+      tipo_entrega:
+        tipoEntrega === "envio" ? "paqueteria" : "presencial",
+      fecha_entrega: fechaEntrega || fechaPorDefecto,
+      envio: {
+        direccion: [
+          `${datosEnvio.calle ?? ""} ${datosEnvio.numero ?? ""}`.trim(),
+          datosEnvio.colonia,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        ciudad: datosEnvio.ciudad ?? "",
+        estado: datosEnvio.estado || datosEnvio.ciudad || "",
+        codigo_postal: datosEnvio.codigoPostal ?? "",
+        pais: "México",
+      },
+    };
+
+    setGuardando(true);
+
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("crear_pedido", {
+      datos,
+    });
+
+    if (error || !data) {
+      setGuardando(false);
+      alert(
+        "No pudimos registrar tu pedido. Revisa tu conexión e intenta de nuevo."
+      );
+      console.error(error);
+      return;
+    }
+
+    const respuesta = data as {
+      folio: string;
+      total: number;
+      modalidad: string;
+    };
+
     const pedido = {
+      folio: respuesta.folio,
+      total: Number(respuesta.total),
+      modalidad: respuesta.modalidad,
       producto,
       metodoPago,
       tipoEntrega,
-      fechaEntrega,
+      fechaEntrega: datos.fecha_entrega,
       datosEnvio,
       fechaPedido: new Date().toISOString(),
     };
@@ -745,9 +821,10 @@ export default function PagoPage() {
               <button
                 type="button"
                 onClick={confirmarPedido}
-                className="flex-1 rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82]"
+                disabled={guardando}
+                className="flex-1 rounded-full bg-[#ef4b91] px-6 py-4 font-bold text-white shadow-md transition hover:bg-[#df3d82] disabled:cursor-wait disabled:opacity-60"
               >
-                Confirmar pedido
+                {guardando ? "Registrando pedido..." : "Confirmar pedido"}
               </button>
 
             </div>

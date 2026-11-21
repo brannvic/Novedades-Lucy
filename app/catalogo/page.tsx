@@ -1,54 +1,28 @@
 "use client";
 import Link from "next/link";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CATEGORIAS, obtenerProductos, type Producto } from "@/lib/productos";
 
-const productos = [
-  {
-    id: 1,
-    nombre: "Muñeca artesanal",
-    modelo: "Modelo Lucy",
-    categoria: "Muñecas",
-    precioMenudeo: 350,
-    precioMayoreo: 300,
-    emoji: "👧🏻",
-  },
-  {
-    id: 2,
-    nombre: "Bebé artesanal",
-    modelo: "Modelo Alex",
-    categoria: "Bebés",
-    precioMenudeo: 280,
-    precioMayoreo: 240,
-    emoji: "👶🏻",
-  },
-  {
-    id: 3,
-    nombre: "Muñeca con sonido",
-    modelo: "Modelo Sofía",
-    categoria: "Con sonido",
-    precioMenudeo: 420,
-    precioMayoreo: 360,
-    emoji: "👧🏼",
-  },
-  {
-    id: 4,
-    nombre: "Bebé artesanal",
-    modelo: "Modelo Emma",
-    categoria: "Bebés",
-    precioMenudeo: 300,
-    precioMayoreo: 260,
-    emoji: "👶🏼",
-  },
-];
-
-const categorias = ["Todos", "Bebés", "Muñecas", "Con sonido"];
 
 export default function Catalogo() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] =
     useState("Todos");
 
   const [busqueda, setBusqueda] = useState("");
+
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState("");
+
+  useEffect(() => {
+    obtenerProductos()
+      .then(setProductos)
+      .catch(() =>
+        setErrorCarga("No pudimos cargar el catálogo. Intenta de nuevo más tarde.")
+      )
+      .finally(() => setCargando(false));
+  }, []);
 
   const productosFiltrados = productos.filter((producto) => {
     const coincideCategoria =
@@ -57,7 +31,7 @@ export default function Catalogo() {
 
     const coincideBusqueda =
       producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.modelo.toLowerCase().includes(busqueda.toLowerCase());
+      (producto.modelo ?? "").toLowerCase().includes(busqueda.toLowerCase());
 
     return coincideCategoria && coincideBusqueda;
   });
@@ -142,7 +116,7 @@ return (
 
         {/* FILTROS */}
         <div className="mb-8 flex flex-wrap gap-3">
-          {categorias.map((categoria) => {
+          {CATEGORIAS.map((categoria) => {
             const activa = categoriaSeleccionada === categoria;
 
             return (
@@ -162,7 +136,17 @@ return (
         </div>
 
         {/* PRODUCTOS */}
-        {productosFiltrados.length === 0 ? (
+        {cargando ? (
+          <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+            <div className="text-5xl">🧸</div>
+            <p className="mt-4 font-bold text-[#70409a]">Cargando catálogo...</p>
+          </div>
+        ) : errorCarga ? (
+          <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+            <div className="text-5xl">⚠️</div>
+            <p className="mt-4 font-bold text-[#70409a]">{errorCarga}</p>
+          </div>
+        ) : productosFiltrados.length === 0 ? (
           <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
             <div className="text-5xl">🔎</div>
 
@@ -195,17 +179,19 @@ return (
                     {producto.nombre}
                   </h3>
 
-                  <p className="text-sm text-gray-500">
-                    {producto.modelo}
-                  </p>
+                  {producto.modelo && (
+                    <p className="text-sm text-gray-500">
+                      {producto.modelo}
+                    </p>
+                  )}
 
                   <div className="mt-4">
                     <p className="text-sm text-gray-500">
-                      Desde
+                      Pieza: ${producto.precioMenudeo} · Mayoreo (3+): ${producto.precioMayoreo}
                     </p>
 
                     <p className="text-2xl font-black text-[#ef4b91]">
-                      ${producto.precioMenudeo}
+                      Desde ${producto.precioMayoreo}
                     </p>
                   </div>
 

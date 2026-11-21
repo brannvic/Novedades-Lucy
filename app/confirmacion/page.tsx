@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 
 type Pedido = {
+  folio?: string;
+  total?: number;
+  modalidad?: string;
   producto: {
     nombre: string;
     modelo: string;
@@ -60,13 +63,8 @@ export default function ConfirmacionPage() {
     return `${day}/${month}/${year}`;
   };
 
-  const [numeroPedido] = useState(
-    () =>
-      "NL-" +
-      Math.floor(
-        1000 + Math.random() * 9000
-      )
-  );
+  // Capítulo 4: el folio lo genera Supabase (NL-0001, NL-0002, ...)
+  const numeroPedido = pedido?.folio ?? "Pendiente";
 
   if (!pedido) {
 
@@ -241,7 +239,7 @@ export default function ConfirmacionPage() {
                 </span>
 
                 <span className="text-3xl font-black text-[#ef4b91]">
-                  ${pedido.producto.subtotal}
+                  ${pedido.total ?? pedido.producto.subtotal}
                 </span>
 
               </div>
