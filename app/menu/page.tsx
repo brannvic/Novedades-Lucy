@@ -89,6 +89,14 @@ export default function MenuPage() {
             </Link>
 
             <Link
+              href="/rastreo"
+              className="flex items-center gap-4 rounded-2xl px-5 py-4 font-bold transition hover:bg-pink-50"
+            >
+              <span className="text-2xl">🚚</span>
+              <span>Rastrear envío</span>
+            </Link>
+
+            <Link
               href="/cuenta"
               className="flex items-center gap-4 rounded-2xl px-5 py-4 font-bold transition hover:bg-pink-50"
             >

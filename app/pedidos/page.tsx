@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
+import { nombrePaqueteria } from "@/lib/paqueterias";
 
 type Item = {
   descripcion: string;
@@ -457,12 +458,25 @@ function DetallePedido({
               <p className="mt-2">
                 {pedido.envio?.direccion}, {pedido.envio?.ciudad}
               </p>
+              {pedido.envio?.paqueteria && (
+                <p className="mt-2">
+                  Paquetería:{" "}
+                  <span className="font-bold">
+                    {nombrePaqueteria(pedido.envio.paqueteria)}
+                  </span>
+                </p>
+              )}
               <p className="mt-2">
-                Código de rastreo:{" "}
+                Número de guía:{" "}
                 <span className="font-bold">
                   {pedido.envio?.numero_rastreo ?? "Pendiente"}
                 </span>
               </p>
+              {!pedido.envio?.numero_rastreo && (
+                <p className="mt-1 text-xs text-gray-500">
+                  Cuando Lucy envíe tu paquete aparecerá aquí el botón de rastreo.
+                </p>
+              )}
               {pedido.envio?.url_rastreo && (
                 <a
                   href={pedido.envio.url_rastreo}
@@ -470,7 +484,7 @@ function DetallePedido({
                   rel="noreferrer"
                   className="mt-3 inline-block rounded-full bg-[#70409a] px-5 py-2 font-bold text-white"
                 >
-                  Rastrear envío
+                  Rastrear en {nombrePaqueteria(pedido.envio.paqueteria)} →
                 </a>
               )}
             </>
