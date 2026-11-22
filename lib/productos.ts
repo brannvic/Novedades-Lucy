@@ -20,6 +20,8 @@ export type Producto = {
   estadoStock: "disponible" | "ultimas_piezas" | "agotado";
   emoji: string;
   imagenUrl: string | null;
+  carpeta360: string | null;
+  fotos360: number;
 };
 
 export const CATEGORIAS = [
@@ -46,10 +48,12 @@ type FilaProducto = {
   estado_stock: "disponible" | "ultimas_piezas" | "agotado";
   emoji: string | null;
   imagen_url: string | null;
+  carpeta_360: string | null;
+  fotos_360: number | null;
 };
 
 const COLUMNAS =
-  "id, nombre, modelo, categoria, descripcion, precio_menudeo, precio_mayoreo, precio_lista, es_temporada, existencias, disponible, estado_stock, emoji, imagen_url";
+  "id, nombre, modelo, categoria, descripcion, precio_menudeo, precio_mayoreo, precio_lista, es_temporada, existencias, disponible, estado_stock, emoji, imagen_url, carpeta_360, fotos_360";
 
 function aProducto(fila: FilaProducto): Producto {
   return {
@@ -67,6 +71,8 @@ function aProducto(fila: FilaProducto): Producto {
     estadoStock: fila.estado_stock,
     emoji: fila.emoji ?? "🧸",
     imagenUrl: fila.imagen_url,
+    carpeta360: fila.carpeta_360,
+    fotos360: fila.fotos_360 ?? 0,
   };
 }
 

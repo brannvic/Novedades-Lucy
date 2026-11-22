@@ -19,14 +19,14 @@ values
   ('Bola',                    'Bebés',        60.00, 10, '👶🏻'),
   ('Bola con cabello',        'Bebés',        70.00, 10, '👶🏼'),
   ('Bebé reborn',             'Bebés',       200.00, 10, '👶🏼'),
-  ('Bebé reborn grande',      'Bebés',       300.00, 10, '👶🏼'),
+  ('Bebé "Toñito"',           'Bebés',       300.00, 10, '👶🏼'),
   ('Bebé "Chucho"',           'Bebés',       300.00, 10, '👶🏻'),
   -- Con sonido
   ('Bebé llorón',             'Con sonido',  150.00, 10, '👶🏻'),
   -- Muñecas
   ('Muñeca "Boquita"',        'Muñecas',     110.00, 10, '👧🏻'),
   ('Muñeca cabello chino',    'Muñecas',     160.00, 10, '👧🏽'),
-  ('Muñeca vestido casual',   'Muñecas',     140.00, 10, '👧🏻'),
+  ('Muñeca "Chaparra casual"','Muñecas',     140.00, 10, '👧🏻'),
   ('Muñeca vestido de fiesta','Muñecas',     150.00, 10, '👧🏼'),
   ('Muñeca con chupón',       'Muñecas',     150.00, 10, '👧🏻'),
   ('Muñeca cabello largo',    'Muñecas',     180.00, 10, '👧🏼'),

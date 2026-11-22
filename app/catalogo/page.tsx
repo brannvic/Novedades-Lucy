@@ -174,7 +174,23 @@ return (
               >
                 {/* IMAGEN PROVISIONAL */}
                 <div className={`relative flex h-56 items-center justify-center bg-gradient-to-br from-[#ffe5f0] to-[#eadcf5] text-7xl ${producto.disponible ? "" : "opacity-50 grayscale"}`}>
-                  {producto.emoji}
+                  {producto.imagenUrl ? (
+                    <img
+                      src={producto.imagenUrl}
+                      alt={producto.nombre}
+                      loading="lazy"
+                      className="h-full w-full bg-white object-contain p-2"
+                    />
+                  ) : (
+                    producto.emoji
+                  )}
+
+                  {/* VISTA 360° (Capítulo 3) */}
+                  {producto.fotos360 > 0 && (
+                    <span className="absolute right-3 top-3 rounded-full bg-[#70409a] px-3 py-1 text-xs font-bold text-white">
+                      360°
+                    </span>
+                  )}
 
                   {/* DISPONIBILIDAD (Capítulo 2) */}
                   <span

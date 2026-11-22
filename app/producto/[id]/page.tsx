@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { obtenerProducto, type Producto } from "@/lib/productos";
+import Visor360 from "@/app/_componentes/Visor360";
 import { useParams } from "next/navigation";
 
 export default function ProductoPage() {
@@ -130,9 +131,21 @@ export default function ProductoPage() {
         <div className="grid gap-8 rounded-[2rem] bg-white p-6 shadow-sm md:grid-cols-2 md:p-10">
           {/* IMAGEN */}
           <div className="flex min-h-[400px] items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#ffe1ef] to-[#eadcf5]">
-            <span className="text-[10rem]">
-              {producto.emoji}
-            </span>
+            {producto.fotos360 > 0 && producto.carpeta360 ? (
+              <Visor360
+                carpeta={producto.carpeta360}
+                total={producto.fotos360}
+                nombre={producto.nombre}
+              />
+            ) : producto.imagenUrl ? (
+              <img
+                src={producto.imagenUrl}
+                alt={producto.nombre}
+                className="max-h-[480px] w-full rounded-[2rem] bg-white object-contain"
+              />
+            ) : (
+              <span className="text-[10rem]">{producto.emoji}</span>
+            )}
           </div>
 
           {/* INFORMACIÓN */}
