@@ -143,7 +143,7 @@ export default function MenuPage() {
             className="flex items-center gap-4 rounded-2xl px-5 py-4 font-bold transition hover:bg-pink-50"
           >
             <span className="text-2xl">ℹ️</span>
-            <span>Acerca de nosotros</span>
+            <span>Sobre mí</span>
           </Link>
 
         </div>

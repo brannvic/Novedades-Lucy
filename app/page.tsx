@@ -102,9 +102,11 @@ export default function Home() {
             {/* Ilustración */}
             <div className="flex justify-center">
 
-              <div className="flex h-64 w-full max-w-md items-center justify-center rounded-[2rem] bg-white/60 text-8xl shadow-inner md:h-80">
-                🧸 🎀 🧸
-              </div>
+              <img
+                src="/inicio/portada.webp"
+                alt="Ilustración del puesto de Novedades Lucy lleno de muñecas y bebés"
+                className="w-full max-w-md rounded-[2rem] border-4 border-white/80 object-cover shadow-lg"
+              />
 
             </div>
 

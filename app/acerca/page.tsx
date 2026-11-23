@@ -36,7 +36,7 @@ export default function AcercaPage() {
             <div className="text-6xl">💗</div>
 
             <h2 className="mt-4 text-4xl font-black text-[#6d3b91]">
-              Acerca de nosotros
+              Sobre mí
             </h2>
 
             <p className="mt-3 text-lg text-[#684d70]">
@@ -44,18 +44,33 @@ export default function AcercaPage() {
             </p>
           </div>
 
+          {/* FOTO */}
+          <img
+            src="/inicio/lucy.webp"
+            alt="Lucy en su puesto de Novedades Lucy, rodeada de muñecas y bebés"
+            className="mt-8 w-full rounded-[2rem] object-cover shadow-md"
+          />
+
           {/* DESCRIPCIÓN */}
           <div className="mt-10">
             <h3 className="text-2xl font-black text-[#70409a]">
-              ¿Quiénes somos?
+              ¡Hola! Soy Lucy
             </h3>
 
             <p className="mt-3 leading-7 text-gray-600">
-              Novedades Lucy es una tienda dedicada a la venta de muñecas,
-              bebés y productos artesanales. Nuestra propuesta busca facilitar
-              el proceso de consulta y realización de pedidos mediante una
-              experiencia digital sencilla.
+              En mi puesto vendo muñecas, bebés y personajes para que cada
+              niña y cada niño encuentre a su compañero de juegos favorito.
+              Con mis hijos atendemos el puesto y preparamos tus pedidos para
+              entrega en persona o por paquetería.
             </p>
+
+            <ul className="mt-5 space-y-2 leading-7 text-gray-600">
+              <li>🎀 Todas mis muñecas y bebés son de vinil.</li>
+              <li>🧦 Van con calceta, calzón, zapato y arete.</li>
+              <li>👗 A diario cambian los estampados de los vestidos de las muñecas y de los mamelucos de los bebés.</li>
+              <li>💃 Hay quinceañeras con vestidos de diferentes colores, personalizables con tiempo.</li>
+              <li>🛍️ A partir de 3 piezas te doy precio de mayoreo.</li>
+            </ul>
           </div>
 
           {/* UBICACIÓN */}
