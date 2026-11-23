@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { obtenerProducto, type Producto } from "@/lib/productos";
 import Visor360 from "@/app/_componentes/Visor360";
 import { useParams } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ProductoPage() {
   const params = useParams();
@@ -14,6 +15,7 @@ export default function ProductoPage() {
   const [cargando, setCargando] = useState(true);
 
   const [cantidad, setCantidad] = useState(1);
+  const [cotizando, setCotizando] = useState(false);
 
   useEffect(() => {
     const carga = Number.isFinite(id)
@@ -86,6 +88,30 @@ export default function ProductoPage() {
 
   window.location.href = "/carrito";
 };
+
+  // Guarda una cotización real en Supabase (precio calculado en el servidor)
+  const cotizar = async () => {
+    setCotizando(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("crear_cotizacion", {
+      p_producto_id: producto.id,
+      p_cantidad: cantidad,
+    });
+    if (error || !data) {
+      setCotizando(false);
+      alert("No se pudo generar la cotización. Intenta de nuevo en un momento.");
+      return;
+    }
+    const folio = String(data);
+    try {
+      const clave = "novedades-lucy-cotizaciones";
+      const folios: string[] = JSON.parse(localStorage.getItem(clave) ?? "[]");
+      localStorage.setItem(clave, JSON.stringify([folio, ...folios.filter((f) => f !== folio)].slice(0, 30)));
+    } catch {
+      // si el navegador no deja guardar, la cotización igual queda en Supabase
+    }
+    window.location.href = `/cotizaciones?folio=${encodeURIComponent(folio)}`;
+  };
 
   return (
     <main className="min-h-screen bg-[#fff7fb] text-[#4a2857]">
@@ -301,8 +327,12 @@ export default function ProductoPage() {
               {producto.disponible ? "🛒 Agregar al carrito" : "Agotado"}
               </button>
 
-              <button className="rounded-full border-2 border-[#70409a] px-6 py-4 font-bold text-[#70409a] transition hover:bg-purple-50">
-                📄 Cotizar
+              <button
+                onClick={cotizar}
+                disabled={cotizando}
+                className="rounded-full border-2 border-[#70409a] px-6 py-4 font-bold text-[#70409a] transition hover:bg-purple-50 disabled:cursor-wait disabled:opacity-50"
+              >
+                {cotizando ? "Generando cotización..." : "📄 Cotizar"}
               </button>
             </div>
           </div>
