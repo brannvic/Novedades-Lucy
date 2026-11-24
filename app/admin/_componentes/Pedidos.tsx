@@ -36,6 +36,7 @@ type PedidoAdmin = {
     numero_rastreo: string | null;
     url_rastreo: string | null;
   } | null;
+  solicitud?: { motivo: string | null; comentario: string | null } | null;
 };
 
 const ESTADOS: Record<string, { texto: string; color: string }> = {
@@ -273,6 +274,39 @@ export default function Pedidos() {
                         🚚 {p.envio.paqueteria?.toUpperCase()} · <b>{p.envio.numero_rastreo}</b>
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* DEVOLUCIÓN PEDIDA POR EL CLIENTE */}
+                {p.estado === "devolucion_solicitada" && (
+                  <div className="mt-4 grid gap-2">
+                    <div className="rounded-2xl bg-orange-50 p-4 text-lg">
+                      <p className="font-black text-orange-800">↩️ Quiere devolverlo</p>
+                      {p.solicitud?.motivo && <p className="mt-1">Motivo: {p.solicitud.motivo}</p>}
+                      {p.solicitud?.comentario && <p className="mt-1 text-gray-700">“{p.solicitud.comentario}”</p>}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={ocupado === p.folio}
+                      onClick={() => {
+                        if (window.confirm(`¿Ya te regresaron el pedido ${p.folio}? Las piezas vuelven al inventario.`)) {
+                          ejecutar(p.folio, "admin_cambiar_estado", { p_folio: p.folio, p_estado: "devuelto" }, `✓ ${p.folio} devuelto`);
+                        }
+                      }}
+                      className="h-14 rounded-2xl bg-green-600 text-xl font-black text-white disabled:opacity-60"
+                    >
+                      ✅ Ya me lo regresaron
+                    </button>
+                    <button
+                      type="button"
+                      disabled={ocupado === p.folio}
+                      onClick={() =>
+                        ejecutar(p.folio, "admin_cambiar_estado", { p_folio: p.folio, p_estado: "entregado" }, `${p.folio}: devolución no aceptada`)
+                      }
+                      className="mt-1 text-lg font-bold text-gray-600 underline"
+                    >
+                      No aceptar la devolución
+                    </button>
                   </div>
                 )}
 

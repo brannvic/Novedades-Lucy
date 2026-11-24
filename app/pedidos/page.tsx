@@ -511,7 +511,7 @@ function DetallePedido({
       {!fueraDeFlujo && pedido.estado !== "entregado" && (
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href="/cancelar"
+            href={`/cancelar?folio=${encodeURIComponent(pedido.folio)}`}
             className="rounded-full border-2 border-red-300 px-5 py-2 font-bold text-red-600 hover:bg-red-50"
           >
             Cancelar pedido
@@ -521,7 +521,7 @@ function DetallePedido({
       {pedido.estado === "entregado" && (
         <div className="mt-6">
           <Link
-            href="/devolucion"
+            href={`/devolucion?folio=${encodeURIComponent(pedido.folio)}`}
             className="rounded-full border-2 border-[#70409a] px-5 py-2 font-bold text-[#70409a] hover:bg-purple-50"
           >
             Solicitar devolución

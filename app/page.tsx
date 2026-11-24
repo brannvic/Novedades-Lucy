@@ -211,8 +211,10 @@ export default function Home() {
               </p>
 
               <p className="mt-2 font-semibold text-[#4a2857]">
-                Girón 33, Centro Histórico de la Cdad. de México,
-                Centro, Cuauhtémoc, 06020 Ciudad de México, CDMX
+                Callejón de Girón, local 72, Col. Centro, C.P. 06020, Cuauhtémoc, CDMX
+              </p>
+              <p className="mt-1 text-sm leading-6 text-gray-500">
+                También puedes acercarte a: Apartado 31, Col. Centro, C.P. 06020, Cuauhtémoc, CDMX
               </p>
             </div>
 
